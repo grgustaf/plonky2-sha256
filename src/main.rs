@@ -7,6 +7,7 @@ use plonky2::plonk::config::{GenericConfig, PoseidonGoldilocksConfig};
 use plonky2::util::timing::TimingTree;
 use plonky2_sha256::circuit::{array_to_bits, make_circuits};
 use sha2::{Digest, Sha256};
+use std::env;
 
 pub fn prove_sha256(msg: &[u8]) -> Result<()> {
     let mut hasher = Sha256::new();
@@ -60,9 +61,16 @@ fn main() -> Result<()> {
     builder.filter_level(LevelFilter::Debug);
     builder.try_init()?;
 
-    const MSG_SIZE: usize = 2828;
-    let mut msg = vec![0; MSG_SIZE as usize];
-    for i in 0..MSG_SIZE - 1 {
+    let args: Vec<String> = env::args().collect();
+
+    let msg_size: usize = if args.len() > 1 {
+        args[1].parse::<usize>().unwrap()
+    } else {
+        2828
+    };
+    println!("Using message size of {}", msg_size);
+    let mut msg = vec![0; msg_size as usize];
+    for i in 0..msg_size - 1 {
         msg[i] = i as u8;
     }
     prove_sha256(&msg)
